@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>المسار الرياضي لطالب</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Tajawal:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #05050a;
+    --panel: #0b0b12;
+    --border: #1a1a28;
+    --border-glow: #2a2a40;
+    --cyan: #00d4ff;
+    --cyan-dim: #004d5e;
+    --cyan-glow: rgba(0,212,255,0.06);
+    --purple: #a855f7;
+    --purple-dim: #3b1f6b;
+    --green: #00ff88;
+    --green-dim: #003d22;
+    --amber: #ffb800;
+    --amber-dim: #4a3500;
+    --red: #ff4040;
+    --text: #d0d8e8;
+    --text-muted: #5a6080;
+    --text-bright: #eef2ff;
+    --grid: rgba(255,255,255,0.025);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Tajawal', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { position: relative; z-index: 1; }
+
+  /* ─── HERO ─── */
+  .hero {
+    padding: 70px 40px 50px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan-dim), var(--cyan), var(--cyan-dim), transparent);
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--cyan);
+    border: 1px solid var(--cyan-dim);
+    padding: 5px 14px;
+    margin-bottom: 24px;
+    background: var(--cyan-glow);
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 5vw, 64px);
+    font-weight: 900;
+    color: var(--text-bright);
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+
+  .hero h1 span { color: var(--cyan); }
+
+  .hero-sub {
+    font-size: 15px;
+    color: var(--text-muted);
+    font-weight: 300;
+    margin-bottom: 40px;
+  }
+
+  /* Formula bar */
+  .formula-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 20px;
+    background: rgba(0,212,255,0.04);
+    border: 1px solid var(--border-glow);
+    padding: 14px 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--cyan);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .formula-bar span { color: var(--text-muted); font-size: 11px; }
+
+  /* ─── PHASE HEADER ─── */
+  .phases { max-width: 1400px; margin: 0 auto; padding: 40px 20px 80px; }
+
+  .phase-block { margin-bottom: 60px; }
+
+  .phase-head {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 20px 24px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-right: 3px solid var(--phase-color, var(--cyan));
+  }
+
+  .phase-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--phase-color, var(--cyan));
+    letter-spacing: 2px;
+  }
+
+  .phase-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-bright);
+  }
+
+  .phase-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .phase-prereq {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    display: inline-block;
+    margin-top: 6px;
+  }
+
+  /* ─── TABLE ─── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel);
+    border: 1px solid var(--border);
+  }
+
+  thead tr {
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid var(--border-glow);
+  }
+
+  th {
+    padding: 12px 16px;
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 400;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 18px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    font-size: 13.5px;
+    line-height: 1.65;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  tr:hover td {
+    background: rgba(0,212,255,0.02);
+  }
+
+  .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    color: var(--text-muted);
+    padding-top: 2px;
+    white-space: nowrap;
+  }
+
+  .book-ar {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: 3px;
+  }
+
+  .book-en {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .author-name {
+    font-size: 13px;
+    color: var(--purple);
+    font-weight: 500;
+  }
+
+  .math-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 6px;
+  }
+
+  .topic {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    padding: 2px 7px;
+    border: 1px solid;
+  }
+
+  .t-prob { color: var(--cyan); border-color: var(--cyan-dim); background: rgba(0,212,255,0.05); }
+  .t-stoch { color: var(--purple); border-color: var(--purple-dim); background: rgba(168,85,247,0.05); }
+  .t-extreme { color: var(--red); border-color: rgba(255,64,64,0.3); background: rgba(255,64,64,0.05); }
+  .t-fin { color: var(--green); border-color: var(--green-dim); background: rgba(0,255,136,0.05); }
+  .t-measure { color: var(--amber); border-color: var(--amber-dim); background: rgba(255,184,0,0.05); }
+  .t-fractals { color: #ff6b9d; border-color: rgba(255,107,157,0.3); background: rgba(255,107,157,0.05); }
+
+  .insight {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .taleb-says {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: rgba(0,212,255,0.04);
+    border-right: 2px solid var(--cyan-dim);
+    font-size: 11.5px;
+    color: var(--cyan);
+    font-style: italic;
+  }
+
+  /* Difficulty bar */
+  .diff-bar {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+  }
+
+  .bar-seg {
+    width: 10px;
+    height: 20px;
+    background: var(--border);
+  }
+
+  .bar-seg.on-1 { background: var(--green); }
+  .bar-seg.on-2 { background: var(--cyan); }
+  .bar-seg.on-3 { background: var(--amber); }
+  .bar-seg.on-4 { background: #ff8c00; }
+  .bar-seg.on-5 { background: var(--red); }
+
+  .diff-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    letter-spacing: 1px;
+  }
+
+  /* star */
+  .star {
+    color: var(--amber);
+    font-size: 13px;
+  }
+
+  /* math formula display */
+  .math-formula {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--amber);
+    background: rgba(255,184,0,0.04);
+    border: 1px solid var(--amber-dim);
+    padding: 4px 10px;
+    margin-top: 6px;
+    display: inline-block;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+
+  /* Footer */
+  .footer-eq {
+    text-align: center;
+    padding: 50px 20px 60px;
+    border-top: 1px solid var(--border);
+  }
+
+  .footer-eq .eq {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    color: var(--cyan);
+    margin-bottom: 12px;
+    letter-spacing: 2px;
+  }
+
+  .footer-eq .sub {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  @media(max-width:768px) {
+    th:nth-child(4), td:nth-child(4),
+    th:nth-child(5), td:nth-child(5) { display:none; }
+    .hero { padding: 50px 16px 36px; }
+    .formula-bar { padding: 10px 14px; font-size: 11px; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="tag">TALEB · MATH TRACK · الرياضيات</div>
+  <h1>المسار <span>الرياضي</span> الكامل</h1>
+  <p class="hero-sub">قائمة طالب المباشرة — من الاحتمالات الأساسية إلى الأحداث المتطرفة والعمليات العشوائية</p>
+  <div class="formula-bar">
+    <span>الهدف:</span>
+    P(كارثة) · أثرها &gt; كل ما تعرفه الآن
+    &nbsp;|&nbsp;
+    <span>الأدوات:</span>
+    نظرية الاحتمال · حساب إيتو · القيم المتطرفة · الفراكتال
+  </div>
+</div>
+
+<div class="phases">
+
+<!-- LEGEND -->
+<div class="legend">
+  <span style="color:var(--text-muted); margin-left:8px;">المواضيع الرياضية:</span>
+  <div class="legend-item"><span class="topic t-prob">PROB</span> احتمالات</div>
+  <div class="legend-item"><span class="topic t-stoch">STOCH</span> عمليات عشوائية</div>
+  <div class="legend-item"><span class="topic t-extreme">EXTREME</span> أحداث نادرة</div>
+  <div class="legend-item"><span class="topic t-fin">FINANCE</span> رياضيات مالية</div>
+  <div class="legend-item"><span class="topic t-measure">MEASURE</span> نظرية القياس</div>
+  <div class="legend-item"><span class="topic t-fractals">FRACTALS</span> فراكتال / لاخطية</div>
+</div>
+
+<!-- ════ PHASE 0 ════ -->
+<div class="phase-block">
+  <div class="phase-head" style="--phase-color: var(--green)">
+    <div>
+      <div class="phase-id">PHASE_00</div>
+    </div>
+    <div>
+      <div class="phase-name">🟢 الصفر الرياضي — الأساس الذي لا تتخطاه</div>
+      <div class="phase-desc">قبل أي شيء — طالب يرفض التعلم من النماذج الخاطئة. ابدأ بفهم الرياضيات كما فهمها العلماء الروس الكبار</div>
+      <div class="phase-prereq">PREREQ: حساب جامعي أولي فقط</div>
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>الكتاب</th><th>المؤلف</th><th>المادة الرياضية</th><th>ما يقوله طالب</th><th>الصعوبة</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><div class="num">00</div></td>
+        <td>
+          <div class="book-ar">الرياضيات: محتواها، طرقها، ومعانيها</div>
+          <div class="book-en">Mathematics: Its Content, Methods and Meaning</div>
+        </td>
+        <td><div class="author-name">ألكساندروف، كولمجوروف، لافرنتييف</div></td>
+        <td>
+          <div class="math-topics">
+            <span class="topic t-prob">PROB</span>
+            <span class="topic t-measure">MEASURE</span>
+            <span class="topic t-stoch">STOCH</span>
+          </div>
+          <div class="insight">موسوعة الرياضيات الروسية الكاملة في مجلد واحد. من الجبر إلى نظرية الاحتمال والمعادلات التفاضلية — هذا هو حجر الأساس الذي بنى عليه طالب كل شيء.</div>
+          <div class="math-formula">∫∑∂ → موسوعة من الجذور</div>
+        </td>
+        <td>
+          <div class="taleb-says">"على علماء الرياضيات استخدام هذا الكتاب كنموذج للكتابة. الروس يفكرون بالرياضيات بوضوح لا يوجد في الكتب الحديثة."</div>
+        </td>
+        <td>
+          <div class="diff-bar">
+            <div class="bar-seg on-1"></div><div class="bar-seg on-1"></div><div class="bar-seg"></div><div class="bar-seg"></div><div class="bar-seg"></div>
+          </div>
+          <div class="diff-label">مبتدئ متحمس</div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ════ PHASE 1 ════ -->
+<div class="phase-block">
+  <div class="phase-head" style="--phase-color: var(--cyan)">
+    <div>
+      <div class="phase-id">PHASE_01</div>
+    </div>
+    <div>
+      <div class="phase-name">🔵 نظرية الاحتمال — الأدوات الحقيقية</div>
+      <div class="phase-desc">طالب يقرأ كل هؤلاء. هذا ليس تعليماً أكاديمياً — هذا سلاحك الأساسي ضد الأوهام</div>
+      <div class="phase-prereq">PREREQ: تفاضل وتكامل + جبر خطي</div>
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>الكتاب</th><th>المؤلف</th><th>المادة الرياضية</th><th>ما يقوله طالب</th><th>الصعوبة</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><div class="num">01</div></td>
+        <td>
+          <div class="book-ar">مقدمة في نظرية الاحتمال وتطبيقاتها — المجلدان 1 و2</div>
+          <div class="book-en">An Introduction to Probability Theory and Its Applications — Vol. 1 & 2</div>
+        </td>
+        <td><div class="author-name">ويليام فيلر</div></td>
+        <td>
+          <div class="math-topics">
+            <span class="topic t-prob">PROB</span>
+            <span class="topic t-stoch">STOCH</span>
+          </div>
+          <div class="insight">الكلاسيكي المطلق. فيلر يعلمك الاحتمالات المتقطعة والمستمرة ببناء منطقي لا يضاهى. المجلد الثاني يغطي العمليات العشوائية والتوزيعات الثقيلة.</div>
+          <div class="math-formula">P(A∪B) · سلاسل ماركوف · حركة براونية</div>
+        </td>
+        <td>
+          <div class="taleb-says">"لو ذهبت إلى جزيرة منعزلة بكتابين فقط، سأختار مجلدَي فيلر. كتبهما منذ أكثر من 40 سنة وما زالا الأفضل."</div>
+        </td>
+        <td>
+          <div class="diff-bar">
+            <div class="bar-seg on-2"></div><div class="bar-seg on-2"></div><div class="bar-seg on-2"></div><div class="bar-seg"></div><div class="bar-seg"></div>
+          </div>
+          <div class="diff-label">متوسط صارم</div>
+        </td>
+      </tr>
+      <tr>
+        <td><div class="num">02</div></td>
+        <td>
+          <div class="book-ar">الاحتمالات والمتغيرات العشوائية والعمليات العشوائية</div>
+          <div class="book-en">Probability, Random Variables and Stochastic Processes</div>
+        </td>
+        <td><div class="author-name">أثاناسيوس باباوليس</div></td>
+        <td>
+          <div class="math-topics">
+            <span class="topic t-prob">PROB</span>
+            <span class="topic t-stoch">STOCH</span>
+          </div>
+          <div class="insight">الكتاب الذي يوصي به طالب صراحةً للمبتدئين المتحمسين. بدون نظرية قياس معقدة، يأخذك مباشرة إلى "السباكة الفعلية" للاحتمالات كما يقول طالب.</div>
+          <div class="math-formula">pdf · cdf · التوزيعات الشرطية · طيف القدرة</div>
+        </td>
+        <td>
+          <div class="taleb-says">"حين يسألني القراء عن كتاب للاحتمالات لغير المتخصصين، أقترح هذا فوراً. أوصي به حتى لعلماء الرياضيات — تدريبهم يجعلهم يضيعون وقتاً في نظرية الحدود بدل السباكة الحقيقية."</div>
+        </td>
+        <td>
+          <div class="diff-bar">
+            <div class="bar-seg on-2"></div><div class="bar-seg on-2"></div><div class="bar-seg"></div><div class="bar-seg"></div><div class="bar-seg"></div>
+          </div>
+          <div class="diff-label">مناسب للبدء</div>
+        </td>
+      </tr>
+      <tr>
+        <td><div class="num">03</div></td>
+        <td>
+          <div class="book-ar">نظرية الاحتمال — محاضرات كورانت</div>
+          <div class="book-en">Probability Theory (Courant Lecture Notes)</div>
+        </td>
+        <td><div class="author-name">S. R. S. فارادهان</div></td>
+        <td>
+          <div class="math-topics">
+            <span class="topic t-prob">PROB</span>
+            <span class="topic t-measure">MEASURE</span>
+          </div>
+          <div class="insight">الأناقة المطلقة. فارادهان أحد أعظم علماء الاحتمالات في التاريخ — والكتاب يُقدّم نظرية القياس في الاحتمالات بإيجاز ودقة لا مثيل لهما. لا جملة زائدة، لا شيء ناقص.</div>
+          <div class="math-formula">نظرية القياس → فضاء الاحتمال → التكامل</div>
+        </td>
+        <td>
+          <div class="taleb-says">"التعلم من فارادهان كالتعلم من أرسطو. اشتريت نسخة ثانية حين فقدت الأولى."</div>
+        </td>
+        <td>
+          <div class="diff-bar">
+            <div class="bar-seg on-2"></div><div class="bar-seg on-2"></div><div class="bar-seg on-2"></div><div class="bar-seg on-2"></div><div class="bar-seg"></div>
+          </div>
+          <div class="diff-label">متقدم — ارتفاع حاد</div>
+        </td>
+      </tr>
+      <tr>
+        <td><div class="num">04</div></td>
+        <td>
+          <div class="book-ar">علم التخمين — تاريخ الاحتمالات</div>
+          <div class="book-en">The Science of Conjecture: Evidence and Probability Before Pascal</div>
+        </td>
+        <td><div class="author-name">جيمس فرانكلين</div></td>
+        <td>
+          <div class="math-topics">
+            <span class="topic t-prob">PROB</span>
+          </div>
+          <div class="insight">الأصول الفلسفية والتاريخية للاحتمالات. يغطي جذور المفهوم من الفلاسفة اليونان حتى العصور الوسطى — وهو ما يفتقره معظم المتعلمين الرياضيين.</div>
+          <div class="math-formula">المنطق + القانون + الاحتمال = الأصل الحقيقي</div>
+        </td>
+        <td>
+          <div class="taleb-says">"يتفوق هذا الكتاب على كل شيء آخر — لم أرَ قط عرضاً أعمق للموضوع، يغطي الأصول الفلسفية الحقيقية لفكرة الاحتمال."</div>
+        </td>
+        <td>
+          <div class="diff-bar">
+            <div class="bar-seg on-1"></div><div class="bar-seg on-1"></div><div class="bar-seg on-1"></div><div class="bar-seg"></div><div class="bar-seg"></div>
+          </div>
+          <div class="diff-label">ممتع وعميق</div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ════ PHASE 2 ════ -->
+<div class="phase-block">
+  <div class="phase-head" style="--phase-color: var(--purple)">
+    <div>
+      <div class="phase-id">PHASE_02</div>
+    </div>
+    <div>
+      <div class="phase-name">🟣 العمليات العشوائية وحساب إيتو</div>
+      <div class="phase-desc">هذا قلب التمويل الكمي — الحركة البراونية والمعادلات التفاضلية العشوائية التي تحكم تسعير الخيارات وتحركات الأسعار</div>
+      <div class="phase-prereq">PREREQ: نظرية الاحتمال + تحليل رياضي</div>
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>الكتاب</th><th>المؤلف</th><th>المادة الرياضية</th><th>ما يقوله طالب</th><th>الصعوبة</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><div class="num">05</div></td>
+        <td>
+          <div class="book-ar">العمليات العشوائية — محاضرات كورانت</div>
+          <div class="book-en">Stochastic Processes (Courant Lecture Notes)</div>
+        </td>
+        <td><div class="author-name">S. R. S. فارادهان</div></td>
+        <td>
+          <div class="math-topics">
+            <span class="topic t-stoch">STOCH</span>
+            <span class="topic t-prob">PROB</span>
+          </div>
+          <div class="insight">مصاحب لكتاب فارادهان في الاحتمالات. يغطي العمليات العشوائية بشكل كامل: سلاسل ماركوف، الحركة البراونية، معادلات فوكر-بلانك التي يستخدمها المحللون الكميون يومياً.</div>
+          <div class="math-formula">dX(t) = μdt + σdW(t) ← Fokker-Planck</div>
+        </td>
+        <td>
+          <div class="taleb-says">اقرنه مع كتاب فارادهان في الاحتمالات — الاثنان معاً يبنيان الإطار الكامل للعمليات العشوائية.</div>
+        </td>
+        <td>
+          <div class="diff-bar">
+            <div class="bar-seg on-4"></div><div class="bar-seg on-4"></div><div class="bar-seg on-4"></div><div class="bar-seg on-4"></div><div class="bar-seg"></div>
+          </div>
+          <div class="diff-label">متقدم جداً</div>
+        </td>
+      </tr>
+      <tr>
+        <td><div class="num">06</div></td>
+        <td>
+          <div class="book-ar">الحركة البراونية وحساب التفاضل العشوائي</div>
+          <div class="book-en">Brownian Motion and Stochastic Calculus</div>
+        </td>
+        <td><div class="author-name">كاراتزاس وشريف</div></td>
+        <td>
+          <div class="math-topics">
+            <span class="topic t-stoch">STOCH</span>
+            <span class="topic t-fin">FINANCE</span>
+          </div>
+          <div class="insight">المرجع الأكاديمي الأول لحساب إيتو العشوائي. يمتد من الأساسيات إلى التطبيقات المالية المتقدمة. هذا ما تحتاجه لتفهم كيف يعمل تسعير بلاك-شولز رياضياً.</div>
+          <div class="math-formula">حساب إيتو: d(fg) = f·dg + g·df + df·dg</div>
+        </td>
+        <td>
+          <div class="taleb-says">من قائمة طالب المباشرة لنظرية الاحتمال — الكتاب المرجعي لأي محلل كمي جاد.</div>
+        </td>
+        <td>
+          <div class="diff-bar">
+            <div class="bar-seg on-4"></div><div class="bar-seg on-4"></div><div class="bar-seg on-4"></div><div class="bar-seg on-4"></div><div class="bar-seg on-4"></div>
+          </div>
+          <div class="diff-label">مستوى دكتوراه</div>
+        </td>
+      </tr>
+      <tr>
+        <td><div class="num">07</div></td>
+        <td>
+          <div class="book-ar">مقدمة في المعادلات التفاضلية العشوائية</div>
+          <div class="book-en">An Introduction to Stochastic Differential Equations</div>
+        </td>
+        <td><div class="author-name">لورانس إيفانز</div></td>
+        <td>
+          <div class="math-topics">
+            <span class="topic t-stoch">STOCH</span>
+            <span class="topic t-fin">FINANCE</span>
+          </div>
+          <div class="insight">نقطة الدخول الأكثر رحمة لعالم SDEs. إيفانز يبني الحدس الرياضي بوضوح استثنائي — من حركة براون إلى تسعير الخيارات ومسائل الإيقاف الأمثل.</div>
+          <div class="math-formula">SDEs → تسعير الخيارات → الإيقاف الأمثل</div>
+        </td>
+        <td>
+          <div class="taleb-says">موصى به من خبراء المال الكمي كبوابة أوضح من كاراتزاس-شريف لمن يبدأ.</div>
+        </td>
+        <td>
+          <div class="diff-bar">
+            <div class="bar-seg on-3"></div><div class="bar-seg on-3"></div><div class="bar-seg on-3"></div><div class="bar-seg"></div><div class="bar-seg"></div>
+          </div>
+          <div class="diff-label">متقدم متوسط</div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ════ PHASE 3 ════ -->
+<div class="phase-block">
+  <div class="phase-head" style="--phase-color: var(--red)">
+    <div>
+      <div class="phase-id">PHASE_03</div>
+    </div>
+    <div>
+      <div class="phase-name">🔴 الأحداث المتطرفة — قلب منهج طالب</div>
+      <div class="phase-desc">هذا هو التخصص الحقيقي لطالب — رياضيات الأحداث النادرة والذيول الثقيلة. هنا يتميز عن كل المستثمرين الآخرين</div>
+      <div class="phase-prereq">PREREQ: نظرية الاحتمال المتقدمة + إحصاء رياضي</div>
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>الكتاب</th><th>المؤلف</th><th>المادة الرياضية</th><th>ما يقوله طالب</th><th>الصعوبة</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><div class="num">08</div></td>
+        <td>
+          <div class="book-ar">نمذجة الأحداث المتطرفة — للتأمين والتمويل</div>
+          <div class="book-en">Modelling Extremal Events: for Insurance and Finance</div>
+        </td>
+        <td><div class="author-name">امبريختس، كلوبلبيرغ، ميكوش</div></td>
+        <td>
+          <div class="math-topics">
+            <span class="topic t-extreme">EXTREME</span>
+            <span class="topic t-prob">PROB</span>
+          </div>
+          <div class="insight">الكتاب المقدس لرياضيات الأحداث المتطرفة والذيول الثقيلة. يغطي القوانين الأسية ما دون الأسية وقوانين القوى — رياضيات المخاطر الخفية التي يعمل عليها طالب مباشرة.</div>
+          <div class="math-formula">P(X > x) ~ x^(-α) ← قانون القوى / الذيل الثقيل</div>
+        </td>
+        <td>
+          <div class="taleb-says">"الإنجيل الكامل للمجال. سأشتري نسخة ثانية للمكتب. لو اخترت كتابين للاحتمالات في جزيرة منعزلة، سيكون فيلر وهذا. أعطيته 6 نجوم، وسأعطيه 7 العام القادم."</div>
+        </td>
+        <td>
+          <div class="diff-bar">
+            <div class="bar-seg on-4"></div><div class="bar-seg on-4"></div><div class="bar-seg on-4"></div><div class="bar-seg on-4"></div><div class="bar-seg on-4"></div>
+          </div>
+          <div class="diff-label">الأعلى صعوبةً</div>
+        </td>
+      </tr>
+      <tr>
+        <td><div class="num">09</div></td>
+        <td>
+          <div class="book-ar">نظرية القيم المتطرفة — مقدمة</div>
+          <div class="book-en">Extreme Value Theory: An Introduction</div>
+        </td>
+        <td><div class="author-name">دي هان وفيريرا</div></td>
+        <td>
+          <div class="math-topics">
+            <span class="topic t-extreme">EXTREME</span>
+            <span class="topic t-prob">PROB</span>
+          </div>
+          <div class="insight">المرجع النظري المباشر لنظرية القيم المتطرفة — EVT. يبني الإطار الرياضي الكامل للتعامل مع أقصى القيم في البيانات المالية.</div>
+          <div class="math-formula">GEV: F(x) = exp(-(1+ξ·x)^(-1/ξ))</div>
+        </td>
+        <td>
+          <div class="taleb-says">من القائمة المباشرة لطالب لمكتبة نظرية الاحتمال والأحداث المتطرفة.</div>
+        </td>
+        <td>
+          <div class="diff-bar">
+            <div class="bar-seg on-4"></div><div class="bar-seg on-4"></div><div class="bar-seg on-4"></div><div class="bar-seg on-4"></div><div class="bar-seg"></div>
+          </div>
+          <div class="diff-label">متقدم جداً</div>
+        </td>
+      </tr>
+      <tr>
+        <td><div class="num">10</div></td>
+        <td>
+          <div class="book-ar">توزيعات الحد لمجاميع المتغيرات المستقلة</div>
+          <div class="book-en">Limit Distributions for Sums of Independent Random Variables</div>
+        </td>
+        <td><div class="author-name">كولمجوروف وغنيدنكو</div></td>
+        <td>
+          <div class="math-topics">
+            <span class="topic t-prob">PROB</span>
+            <span class="topic t-extreme">EXTREME</span>
+          </div>
+          <div class="insight">الأصل الكلاسيكي لنظرية الحد المركزي وما وراءها — التوزيعات المستقرة (Stable Distributions) التي تصف الأسواق أفضل من التوزيع الطبيعي.</div>
+          <div class="math-formula">X₁+X₂+...+Xₙ → α-stable distribution</div>
+        </td>
+        <td>
+          <div class="taleb-says">من قائمة طالب المباشرة في يناير 2020 — الأساس الرياضي لفهم لماذا المتوسطات كاذبة في الأسواق.</div>
+        </td>
+        <td>
+          <div class="diff-bar">
+            <div class="bar-seg on-4"></div><div class="bar-seg on-4"></div><div class="bar-seg on-4"></div><div class="bar-seg on-4"></div><div class="bar-seg on-4"></div>
+          </div>
+          <div class="diff-label">للباحثين المتخصصين</div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ════ PHASE 4 ════ -->
+<div class="phase-block">
+  <div class="phase-head" style="--phase-color: var(--amber)">
+    <div>
+      <div class="phase-id">PHASE_04</div>
+    </div>
+    <div>
+      <div class="phase-name">🟡 الرياضيات المالية التطبيقية — من النظرية للسوق</div>
+      <div class="phase-desc">هنا تُحوّل كل ما تعلمته إلى أدوات عملية: تسعير المشتقات، الفراكتال، ونماذج الانهيار</div>
+      <div class="phase-prereq">PREREQ: كل المراحل السابقة</div>
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>الكتاب</th><th>المؤلف</th><th>المادة الرياضية</th><th>ما يقوله طالب</th><th>الصعوبة</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><div class="num">11</div></td>
+        <td>
+          <div class="book-ar">المشتقات المالية: التسعير، التطبيقات، والرياضيات</div>
+          <div class="book-en">Financial Derivatives: Pricing, Applications, and Mathematics</div>
+        </td>
+        <td><div class="author-name">جميل باز وجورج شاكو</div></td>
+        <td>
+          <div class="math-topics">
+            <span class="topic t-fin">FINANCE</span>
+            <span class="topic t-stoch">STOCH</span>
+          </div>
+          <div class="insight">تسعير المشتقات من الأساس. يبني الجسر الكامل بين حساب إيتو العشوائي ونظرية التحكيم وتسعير الخيارات — معادلات كولمجوروف وتقنيات المارتينغال.</div>
+          <div class="math-formula">Black-Scholes PDE → ∂V/∂t + ½σ²S²∂²V/∂S² + rS∂V/∂S - rV = 0</div>
+        </td>
+        <td>
+          <div class="taleb-says">موصى به من طالب للمحللين الماليين الذين يريدون الجسر الكامل بين الرياضيات وأسواق المشتقات.</div>
+        </td>
+        <td>
+          <div class="diff-bar">
+            <div class="bar-seg on-3"></div><div class="bar-seg on-3"></div><div class="bar-seg on-3"></div><div class="bar-seg on-3"></div><div class="bar-seg"></div>
+          </div>
+          <div class="diff-label">متقدم تطبيقي</div>
+        </td>
+      </tr>
+      <tr>
+        <td><div class="num">12</div></td>
+        <td>
+          <div class="book-ar">السلوك الخاطئ للأسواق — رؤية فراكتالية للمخاطر</div>
+          <div class="book-en">The (Mis)behavior of Markets</div>
+        </td>
+        <td><div class="author-name">بنوا ماندلبروت</div></td>
+        <td>
+          <div class="math-topics">
+            <span class="topic t-fractals">FRACTALS</span>
+            <span class="topic t-extreme">EXTREME</span>
+          </div>
+          <div class="insight">مخترع الفراكتال يُثبت رياضياً أن الأسواق تتبع توزيعات قوى لا توزيعاً طبيعياً. الأزمات أكثر تكراراً بكثير مما يقول النموذج الكلاسيكي.</div>
+          <div class="math-formula">σ_market ≠ Gaussian → α-stable / Pareto tails</div>
+        </td>
+        <td>
+          <div class="taleb-says">من الكتب الأكثر تأثيراً في تشكيل فكر طالب — ماندلبروت كان صديقه الشخصي ومعلمه الأعظم.</div>
+        </td>
+        <td>
+          <div class="diff-bar">
+            <div class="bar-seg on-2"></div><div class="bar-seg on-2"></div><div class="bar-seg on-2"></div><div class="bar-seg"></div><div class="bar-seg"></div>
+          </div>
+          <div class="diff-label">متوسط — نقطة البداية</div>
+        </td>
+      </tr>
+      <tr>
+        <td><div class="num">13</div></td>
+        <td>
+          <div class="book-ar">الظواهر الحرجة في العلوم الطبيعية</div>
+          <div class="book-en">Critical Phenomena in Natural Sciences: Chaos, Fractals, Self-organization and Disorder</div>
+        </td>
+        <td><div class="author-name">ديديه سورنيت</div></td>
+        <td>
+          <div class="math-topics">
+            <span class="topic t-fractals">FRACTALS</span>
+            <span class="topic t-extreme">EXTREME</span>
+          </div>
+          <div class="insight">الفيزيائي الذي يتنبأ بانهيار الأسواق بالرياضيات. يشرح الفوضى والتنظيم الذاتي وقوانين القوى كما تظهر في الطبيعة والأسواق معاً — أدوات التنبؤ بالأنظمة غير الخطية.</div>
+          <div class="math-formula">انتقادية ذاتية التنظيم → نقاط التحول في الانهيارات</div>
+        </td>
+        <td>
+          <div class="taleb-says">"تعلمت من سورنيت أكثر مما تعلمته من أي كتاب آخر حول ديناميكيات عدم التوازن."</div>
+        </td>
+        <td>
+          <div class="diff-bar">
+            <div class="bar-seg on-3"></div><div class="bar-seg on-3"></div><div class="bar-seg on-3"></div><div class="bar-seg on-3"></div><div class="bar-seg"></div>
+          </div>
+          <div class="diff-label">متقدم فيزياء رياضية</div>
+        </td>
+      </tr>
+      <tr>
+        <td><div class="num">14</div></td>
+        <td>
+          <div class="book-ar">النماذج التي تتصرف بشكل سيئ</div>
+          <div class="book-en">Models.Behaving.Badly.</div>
+        </td>
+        <td><div class="author-name">إيمانويل ديرمان</div></td>
+        <td>
+          <div class="math-topics">
+            <span class="topic t-fin">FINANCE</span>
+          </div>
+          <div class="insight">فيزيائي نووي تحوّل لمحلل في وول ستريت يكشف الفرق بين النموذج والنظرية — ولماذا التمويل لن يكون علماً حقيقياً أبداً. يُبرّئ من يرفضون النماذج المالية التقليدية.</div>
+          <div class="math-formula">نموذج ≠ نظرية → الفرق الذي يُفلس المستثمرين</div>
+        </td>
+        <td>
+          <div class="taleb-says">"كتابي من كتب. ديرمان يكتب باقتدار الجمع بين المذكرات والاعتراف والمقالة الفلسفية. يُثبت أن النمذجة المالية ليست عملية ولا علمية."</div>
+        </td>
+        <td>
+          <div class="diff-bar">
+            <div class="bar-seg on-2"></div><div class="bar-seg on-2"></div><div class="bar-seg"></div><div class="bar-seg"></div><div class="bar-seg"></div>
+          </div>
+          <div class="diff-label">مقروء وعميق</div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</div><!-- /phases -->
+
+<!-- FOOTER -->
+<div class="footer-eq">
+  <div class="eq">∑ مسار طالب الرياضي الكامل: 14 كتاباً في 5 مراحل</div>
+  <div class="sub" style="margin-top:10px;">من الاحتمالات الأساسية → العمليات العشوائية → الأحداث المتطرفة → الرياضيات المالية التطبيقية</div>
+  <div style="margin-top: 20px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--cyan-dim);">
+    "الذكاء لا يُعوّض عن وضوح الرياضيات، والرياضيات لا تُعوّض عن حكمة الخبرة" — N.N. Taleb
+  </div>
+</div>
+
+</div><!-- /container -->
+</body>
+</html>
